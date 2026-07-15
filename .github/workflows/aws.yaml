@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
 
-jobs: # Jobs to run in parallel
+jobs:
   Continuous-Integration:
     runs-on: ubuntu-latest
     steps:
@@ -62,8 +62,10 @@ jobs: # Jobs to run in parallel
 
       - name: Run Docker Image to serve users
         run: |
-          docker stop mlops-app || true
-          docker rm mlops-app || true
+          docker ps -q --filter "publish=8080" | xargs -r docker stop
+          docker ps -aq --filter "publish=8080" | xargs -r docker rm
+          docker stop mlops-app 2>/dev/null || true
+          docker rm mlops-app 2>/dev/null || true
           docker run -d --name mlops-app \
             -e AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
             -e AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
